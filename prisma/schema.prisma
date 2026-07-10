@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  nama       String
+  email      String    @unique
+  password   String
+  role       String
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  motors      Motor[]
+  requests    RecommendationRequest[]
+
+  @@map("users")
+}
+
+model Merk {
+  id         Int      @id @default(autoincrement())
+  namaMerk   String   @map("nama_merk")
+
+  motors     Motor[]
+
+  @@map("merk")
+}
+
+model Motor {
+  id               Int       @id @default(autoincrement())
+  namaMotor        String    @map("nama_motor")
+  tipe             String
+  warna            String
+  transmisi        String
+  deskripsi        String
+  foto             String
+  status           String
+
+  harga            Float
+  cc               Int
+  tahunMotor       Int       @map("tahun_motor")
+  efisiensiBbm     Float     @map("efisiensi_bbm")
+  masaPajakStnk    Int       @map("masa_pajak_stnk")
+  kondisiFisik     Float     @map("kondisi_fisik")
+
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  userId           Int       @map("id_user")
+  merkId           Int       @map("id_merk")
+
+  user             User      @relation(fields: [userId], references: [id])
+  merk             Merk      @relation(fields: [merkId], references: [id])
+
+  results          RecommendationResult[]
+
+  @@map("motors")
+}
+
+model Kriteria {
+  id              Int      @id @default(autoincrement())
+  kode            String
+  namaKriteria    String   @map("nama_kriteria")
+  atribut         String
+  bobotDefault    Float    @map("bobot_default")
+
+  weights         RequestWeight[]
+
+  @@map("kriteria")
+}
+
+model RecommendationRequest {
+  id          Int      @id @default(autoincrement())
+  metode      String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  userId      Int      @map("id_user")
+
+  user         User    @relation(fields: [userId], references: [id])
+
+  weights      RequestWeight[]
+  results      RecommendationResult[]
+
+  @@map("recommendation_request")
+}
+
+model RequestWeight {
+  id            Int      @id @default(autoincrement())
+  bobot         Float
+
+  requestId     Int      @map("id_request")
+  kriteriaId    Int      @map("id_kriteria")
+
+  request       RecommendationRequest @relation(fields: [requestId], references: [id])
+  kriteria      Kriteria              @relation(fields: [kriteriaId], references: [id])
+
+  @@map("request_weight")
+}
+
+model RecommendationResult {
+  id          Int      @id @default(autoincrement())
+  skor        Float
+  ranking     Int
+
+  requestId   Int      @map("id_request")
+  motorId     Int      @map("id_motor")
+
+  request     RecommendationRequest @relation(fields: [requestId], references: [id])
+  motor       Motor                 @relation(fields: [motorId], references: [id])
+
+  @@map("recommendation_result")
+}
