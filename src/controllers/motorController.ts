@@ -153,27 +153,35 @@ export const updateMotor = async (req: Request, res: Response) => {
       });
     }
 
+    const dataUpdate: Record<string, any> = {};
+
+    if (namaMotor !== undefined) dataUpdate.namaMotor = namaMotor;
+    if (tipe !== undefined) dataUpdate.tipe = tipe;
+    if (warna !== undefined) dataUpdate.warna = warna;
+    if (transmisi !== undefined) dataUpdate.transmisi = transmisi;
+    if (deskripsi !== undefined) dataUpdate.deskripsi = deskripsi;
+    if (foto !== undefined) dataUpdate.foto = foto;
+    if (status !== undefined) dataUpdate.status = status;
+    if (harga !== undefined) dataUpdate.harga = Number(harga);
+    if (cc !== undefined) dataUpdate.cc = Number(cc);
+    if (tahunMotor !== undefined) dataUpdate.tahunMotor = Number(tahunMotor);
+    if (efisiensiBbm !== undefined) dataUpdate.efisiensiBbm = Number(efisiensiBbm);
+    if (masaPajakStnk !== undefined) dataUpdate.masaPajakStnk = Number(masaPajakStnk);
+    if (kondisiFisik !== undefined) dataUpdate.kondisiFisik = Number(kondisiFisik);
+    if (userId !== undefined) dataUpdate.userId = Number(userId);
+    if (merkId !== undefined) dataUpdate.merkId = Number(merkId);
+
+    if (Object.keys(dataUpdate).length === 0) {
+      return res.status(400).json({
+        message: "Tidak ada field yang diupdate",
+      });
+    }
+
     const motor = await prisma.motor.update({
       where: {
         id: Number(id),
       },
-      data: {
-        namaMotor,
-        tipe,
-        warna,
-        transmisi,
-        deskripsi,
-        foto,
-        status,
-        harga: Number(harga),
-        cc: Number(cc),
-        tahunMotor: Number(tahunMotor),
-        efisiensiBbm: Number(efisiensiBbm),
-        masaPajakStnk: Number(masaPajakStnk),
-        kondisiFisik: Number(kondisiFisik),
-        userId: Number(userId),
-        merkId: Number(merkId),
-      },
+      data: dataUpdate,
     });
 
     res.json({

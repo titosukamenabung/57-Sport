@@ -60,7 +60,7 @@ export const getMyHistory = async (
   res: Response
 ) => {
   try {
-    const userId = Number(req.user.id);
+    const userId = Number((req as any).user.id);
 
     const histories =
       await prisma.recommendationRequest.findMany({

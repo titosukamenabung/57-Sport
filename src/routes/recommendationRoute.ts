@@ -1,5 +1,5 @@
 import express from "express";
-import verifyToken from "express";
+import { authenticate } from "../middlewares/authMiddleware.js";
 import {
   getRecommendations,
   getMyHistory,
@@ -9,13 +9,13 @@ import {
   deleteRecommendation,
 } from "../controllers/recommendationController.js";
 
-import { authenticate } from "../middlewares/authMiddleware.js";
+
 
 const router = express.Router();
 
 router.get("/", authenticate, getRecommendations);
 
-router.get("/my-history", verifyToken, getMyHistory);
+router.get("/my-history", authenticate, getMyHistory);
 
 router.post("/", authenticate, createRecommendationRequest);
 
