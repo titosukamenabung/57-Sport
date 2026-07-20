@@ -1,0 +1,10 @@
+export interface Product {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+    category: string;
+    image: string;
+}
+//# sourceMappingURL=product.d.ts.map
