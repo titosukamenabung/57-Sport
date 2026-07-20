@@ -7,6 +7,7 @@ import {
   showRecommendation,
   calculateRecommendation,
   deleteRecommendation,
+  calculateManualRecommendation,
 } from "../controllers/recommendationController.js";
 
 
@@ -32,5 +33,7 @@ router.delete(
   authenticate,
   deleteRecommendation
 );
+
+router.post("/manual", calculateManualRecommendation);
 
 export default router;

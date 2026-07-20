@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/db.js";
-import { calculateTOPSIS } from "../services/topsisService.js";
+import { calculateTOPSIS, calculateManualTOPSIS } from "../services/topsisService.js";
 
 // ======================================
 // GET ALL RECOMMENDATIONS
@@ -229,6 +229,13 @@ export const calculateRecommendation = async (
 ) => {
   try {
     const { requestId } = req.params;
+    const preferences = req.body?.preferences ?? null;
+
+    if (!preferences) {
+      return res.status(400).json({
+        message: "Preferences harus dikirim.",
+      });
+    }
 
     const request = await prisma.recommendationRequest.findUnique({
       where: {
@@ -242,17 +249,80 @@ export const calculateRecommendation = async (
       });
     }
 
-    const result = await calculateTOPSIS(Number(requestId));
+    const result = await calculateTOPSIS(Number(requestId), preferences);
 
     return res.status(200).json({
       message: "Perhitungan TOPSIS berhasil",
       data: result,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
     return res.status(500).json({
-      message: "Gagal menghitung TOPSIS",
+      message: error.message || "Gagal menghitung TOPSIS",
+    });
+  }
+};
+
+// ======================================
+// CALCULATE MANUAL TOPSIS (5 Selected Motors)
+// ======================================
+export const calculateManualRecommendation = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { motorIds, weights } = req.body;
+
+    if (!Array.isArray(motorIds)) {
+      return res.status(400).json({
+        message: "Data motorIds harus berupa array",
+      });
+    }
+
+    if (motorIds.length < 2) {
+      return res.status(400).json({
+        message: "Minimal pilih 2 motor untuk perbandingan",
+      });
+    }
+
+    if (motorIds.length > 5) {
+      return res.status(400).json({
+        message: "Maksimal 5 motor dapat dibandingkan",
+      });
+    }
+
+    const uniqueIds = [...new Set(motorIds)];
+    if (uniqueIds.length !== motorIds.length) {
+      return res.status(400).json({
+        message: "Tidak boleh ada ID motor yang duplikat",
+      });
+    }
+
+    const numericIds = motorIds.map(Number);
+    if (numericIds.some(isNaN)) {
+      return res.status(400).json({
+        message: "ID motor harus berupa angka",
+      });
+    }
+
+    if (!Array.isArray(weights) || weights.length === 0) {
+      return res.status(400).json({
+        message: "Data bobot harus dikirim",
+      });
+    }
+
+    const data = await calculateManualTOPSIS(numericIds, weights);
+
+    return res.status(200).json({
+      message: "Perhitungan TOPSIS manual berhasil",
+      data,
+    });
+  } catch (error: any) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: error.message || "Gagal menghitung TOPSIS manual",
     });
   }
 };
